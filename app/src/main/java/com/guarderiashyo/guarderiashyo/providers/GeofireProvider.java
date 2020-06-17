@@ -25,9 +25,9 @@ public class GeofireProvider {
         mGeofire.removeLocation(idGuarderia);
     }
 
-/*
-    public GeoQuery getActiveDrivers(LatLng latLng, double radius) {
-        GeoQuery geoQuery = mGeofire.queryAtLocation(new GeoLocation(latLng.latitude, latLng.longitude), radius);
+
+    public GeoQuery getActiveGuarderias(LatLng latLng) {
+        GeoQuery geoQuery = mGeofire.queryAtLocation(new GeoLocation(latLng.latitude, latLng.longitude), 10);
         geoQuery.removeAllListeners();
         return geoQuery;
     }
@@ -39,5 +39,5 @@ public class GeofireProvider {
     public DatabaseReference isDriverWorking(String idDriver) {
         return FirebaseDatabase.getInstance().getReference().child("drivers_working").child(idDriver);
     }
-*/
+
 }

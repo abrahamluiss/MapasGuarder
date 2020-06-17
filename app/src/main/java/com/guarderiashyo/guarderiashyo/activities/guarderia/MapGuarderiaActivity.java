@@ -165,7 +165,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setSmallestDisplacement(5);
 
-        startLocaction();
+        //startLocaction();
     }
 
     @Override
@@ -292,6 +292,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     }
 
     void logout(){
+        //desconectar(); //cuando cierra sesion elimina la ubic de la bd
         mAuthProvider.logout();
         Intent i = new Intent(MapGuarderiaActivity.this, InicioActivity.class);
         startActivity(i);
