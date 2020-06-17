@@ -18,10 +18,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 
 public class LoginActivity extends AppCompatActivity {
 
-    Toolbar mToolbar;
+
     EditText mTxtInputEmail, mTxtInputPassword;
     Button mBotonLogin;
 
@@ -34,11 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        mToolbar = findViewById(R.id.idToolbar);
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Login");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        MyToolbar.show(this,"Login de usuario", true);
 
         mTxtInputEmail = findViewById(R.id.txtInputEmail);
         mTxtInputPassword = findViewById(R.id.txtInputPassword);

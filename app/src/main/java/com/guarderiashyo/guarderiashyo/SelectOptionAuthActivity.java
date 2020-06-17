@@ -8,18 +8,17 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
+
 public class SelectOptionAuthActivity extends AppCompatActivity {
 
-    Toolbar mToolbar;
+
     Button mBotonIrALogin, mBotonIrARegistro;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_option_auth);
-        mToolbar = findViewById(R.id.idToolbar);
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Seleccionar opcion");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        MyToolbar.show(this,"Seleccione una opcion", true);
 
         mBotonIrALogin = findViewById(R.id.btnIrLogin);
         mBotonIrALogin.setOnClickListener(new View.OnClickListener() {
