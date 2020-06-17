@@ -1,8 +1,7 @@
-package com.guarderiashyo.guarderiashyo;
+package com.guarderiashyo.guarderiashyo.activities.client;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import dmax.dialog.SpotsDialog;
 
 import android.app.AlertDialog;
@@ -17,17 +16,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.models.Client;
-import com.guarderiashyo.guarderiashyo.models.User;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
 import com.guarderiashyo.guarderiashyo.providers.ClientProvider;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    SharedPreferences mPref;
+    //SharedPreferences mPref;
     AuthProvider mAuthProvider;
     ClientProvider mClientProvider;
 
@@ -47,7 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
 
-        mPref = getApplicationContext().getSharedPreferences("typeUser", MODE_PRIVATE);
+        //mPref = getApplicationContext().getSharedPreferences("typeUser", MODE_PRIVATE);
 
         mDialog = new SpotsDialog.Builder().setContext(RegisterActivity.this).setMessage("Espere un momento").build();
 

@@ -1,8 +1,7 @@
-package com.guarderiashyo.guarderiashyo;
+package com.guarderiashyo.guarderiashyo.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import dmax.dialog.SpotsDialog;
 
 import android.app.AlertDialog;
@@ -18,6 +17,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 
 public class LoginActivity extends AppCompatActivity {

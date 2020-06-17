@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@drawable/gradiente"
-    tools:context=".SelectOptionAuthActivity">
+    tools:context=".activities.SelectOptionAuthActivity">
 
     <include layout="@layout/action_bar_toollbar"/>
 

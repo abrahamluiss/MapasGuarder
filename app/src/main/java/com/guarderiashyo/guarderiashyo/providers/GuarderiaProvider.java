@@ -19,6 +19,8 @@ public class GuarderiaProvider {
         Map<String, Object> map = new HashMap<>();
         map.put("name", guarderia.getName());
         map.put("email", guarderia.getEmail());
+        map.put("ruc", guarderia.getRuc());
+        map.put("trabajadores", guarderia.getTrabajadores());
 
         return  mDatabase.child(guarderia.getId()).setValue(map);
     }

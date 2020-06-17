@@ -1,4 +1,4 @@
-package com.guarderiashyo.guarderiashyo;
+package com.guarderiashyo.guarderiashyo.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ImageView;
+
+import com.guarderiashyo.guarderiashyo.R;
 
 public class MainActivity extends AppCompatActivity {
 
