@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -39,15 +40,18 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.activities.InicioActivity;
 import com.guarderiashyo.guarderiashyo.activities.client.MapClientActivity;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
+import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
 
 public class MapGuarderiaActivity extends AppCompatActivity implements OnMapReadyCallback {
     Button btnCerrarSesion;
     AuthProvider mAuthProvider;
+    private GeofireProvider mGeofireProvider;
 
     private GoogleMap mMap;
     private SupportMapFragment mMapFragment;
@@ -64,12 +68,15 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
     private  boolean mIsConnect = false;
 
+    private LatLng mActualLatLng;
+
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
         @Override
         public void onLocationResult(LocationResult locationResult){
             for(Location location: locationResult.getLocations()){
                 if(getApplicationContext() != null){
 
+                    mActualLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                     if(mMarker != null){
                         mMarker.remove();//elimnar marca si ya esta
                     }
@@ -86,6 +93,8 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
                                     .zoom(16f)
                                     .build()
                     ));
+
+                    actualizarLocalizacion();
                 }
             }
         }
@@ -103,7 +112,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
 
         mAuthProvider = new AuthProvider();
-
+        mGeofireProvider = new GeofireProvider();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
@@ -120,6 +129,13 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         });
     }
 
+
+    private void actualizarLocalizacion(){
+        if(mAuthProvider.existSession() && mActualLatLng != null){
+            mGeofireProvider.saveLocation(mAuthProvider.getId(), mActualLatLng);
+
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.client_menu, menu);
@@ -210,10 +226,17 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     }
 
     private void desconectar(){
-        mBtnConectar.setText("Conectarse");
-        mIsConnect = false;
+
         if(mFusedLocation != null){
+            mBtnConectar.setText("Conectarse");
+            mIsConnect = false;
             mFusedLocation.removeLocationUpdates(mLocationCallback);
+            if(mAuthProvider.existSession()){
+                mGeofireProvider.removeLocation(mAuthProvider.getId());
+            }
+
+        }else{
+            Toast.makeText(this, "No te puedes desconectar", Toast.LENGTH_SHORT).show();
         }
     }
     private void startLocaction(){
