@@ -32,12 +32,12 @@ public class GeofireProvider {
         return geoQuery;
     }
 
-    public DatabaseReference getDriverLocation(String idDriver) {
-        return mDatabase.child(idDriver).child("l");
+    public DatabaseReference getGuarderiaLocation(String idGuarderia) {
+        return mDatabase.child(idGuarderia).child("l");
     }
 
-    public DatabaseReference isDriverWorking(String idDriver) {
-        return FirebaseDatabase.getInstance().getReference().child("drivers_working").child(idDriver);
+    public DatabaseReference isGuarderiaWorking(String idGuarderia) {
+        return FirebaseDatabase.getInstance().getReference().child("guarderia_working").child(idGuarderia);
     }
 
 }

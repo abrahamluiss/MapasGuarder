@@ -80,17 +80,18 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         public void onLocationResult(LocationResult locationResult){
             for(Location location: locationResult.getLocations()){
                 if(getApplicationContext() != null){
+                    mActualLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                     //obtener la localizacion del cliente en tiempo real
                     if(mMarker != null){
                         mMarker.remove();//elimnar marca si ya esta
                     }
-                    mActualLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
 
 
                     mMarker = mMap.addMarker(new MarkerOptions().position(
                             new LatLng(location.getLatitude(), location.getLongitude())
                             ).title("Tu posicion")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ubicacion))
                     );
                     mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
                             new CameraPosition.Builder()
