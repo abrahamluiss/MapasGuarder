@@ -34,8 +34,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.activities.InicioActivity;
 import com.guarderiashyo.guarderiashyo.activities.client.MapClientActivity;
@@ -55,12 +58,27 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     private final static int LOCATION_REQUEST_CODE = 1;//actua como bandera para solicitar los permisos de ubicacion
     private final static int SETTINGS_REQUEST_CODE = 2;//actua como bandera para solicitar los permisos de ubicacion
 
+    private Marker mMarker;
+
+    private  Button mBtnConectar;
+
+    private  boolean mIsConnect = false;
 
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
         @Override
         public void onLocationResult(LocationResult locationResult){
             for(Location location: locationResult.getLocations()){
                 if(getApplicationContext() != null){
+
+                    if(mMarker != null){
+                        mMarker.remove();//elimnar marca si ya esta
+                    }
+
+                    mMarker = mMap.addMarker(new MarkerOptions().position(
+                            new LatLng(location.getLatitude(), location.getLongitude())
+                    ).title("Tu posicion")
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.madre))
+                    );
                     //obtener la localizacion del cliente en tiempo real
                     mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
                             new CameraPosition.Builder()
@@ -89,7 +107,17 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
-
+        mBtnConectar = findViewById(R.id.btnConectar);
+        mBtnConectar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mIsConnect){
+                    desconectar();
+                }else{
+                    startLocaction();
+                }
+            }
+        });
     }
 
     @Override
@@ -113,9 +141,11 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
+
+
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(10000);//tiempo de actualizacion
+        mLocationRequest.setFastestInterval(10000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setSmallestDisplacement(5);
 
@@ -130,6 +160,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if(gpsActivar()){
                         mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                        //mMap.setMyLocationEnabled(true); //punto azul
 
                     }else{
                         mostrarDialogNoGps();
@@ -151,6 +182,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == SETTINGS_REQUEST_CODE && gpsActivar()){
             mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+            //mMap.setMyLocationEnabled(true); //punto azul
 
         }else{
             mostrarDialogNoGps();
@@ -163,7 +195,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
                 .setPositiveButton("Configuraciones", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        startActivityForResult( new Intent(Settings.ACTION_LOCALE_SETTINGS), SETTINGS_REQUEST_CODE);
+                        startActivityForResult( new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), SETTINGS_REQUEST_CODE);
                     }
                 }).create().show();
     }
@@ -177,11 +209,22 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         return isActive;
     }
 
+    private void desconectar(){
+        mBtnConectar.setText("Conectarse");
+        mIsConnect = false;
+        if(mFusedLocation != null){
+            mFusedLocation.removeLocationUpdates(mLocationCallback);
+        }
+    }
     private void startLocaction(){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 if(gpsActivar()){
+                    mBtnConectar.setText("Deconectarse");
+                    mIsConnect = true;
                     mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                    //mMap.setMyLocationEnabled(true); //punto azul
+
                 }else{
                     mostrarDialogNoGps();
                 }
@@ -194,6 +237,8 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         } else {
             if(gpsActivar()){
                 mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                //mMap.setMyLocationEnabled(true); //punto azul
+
 
             }
             else{
