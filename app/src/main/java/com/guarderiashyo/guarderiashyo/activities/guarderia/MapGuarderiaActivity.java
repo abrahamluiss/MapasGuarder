@@ -1,6 +1,7 @@
 package com.guarderiashyo.guarderiashyo.activities.guarderia;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -8,13 +9,16 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.ActivityInfoCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,6 +53,8 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     private FusedLocationProviderClient mFusedLocation;
 
     private final static int LOCATION_REQUEST_CODE = 1;//actua como bandera para solicitar los permisos de ubicacion
+    private final static int SETTINGS_REQUEST_CODE = 2;//actua como bandera para solicitar los permisos de ubicacion
+
 
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
         @Override
@@ -122,24 +128,77 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         if(requestCode == LOCATION_REQUEST_CODE){
             if(grantResults.length > 0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                    if(gpsActivar()){
+                        mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+
+                    }else{
+                        mostrarDialogNoGps();
+                    }
+                }
+                else{
+                    checkLocationPermissions();
                 }
             }
+            else{
+                checkLocationPermissions();
+            }
+
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == SETTINGS_REQUEST_CODE && gpsActivar()){
+            mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+
+        }else{
+            mostrarDialogNoGps();
+        }
+    }
+
+    private void mostrarDialogNoGps(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Porfavor activa tu ubicación para continuar")
+                .setPositiveButton("Configuraciones", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        startActivityForResult( new Intent(Settings.ACTION_LOCALE_SETTINGS), SETTINGS_REQUEST_CODE);
+                    }
+                }).create().show();
+    }
+
+    private boolean  gpsActivar(){
+        boolean isActive = false;
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            isActive = true;
+        }
+        return isActive;
     }
 
     private void startLocaction(){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                if(gpsActivar()){
+                    mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                }else{
+                    mostrarDialogNoGps();
+                }
+
 
             }
             else{
                 checkLocationPermissions();
             }
         } else {
-            mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+            if(gpsActivar()){
+                mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 
+            }
+            else{
+                mostrarDialogNoGps();
+            }
         }
     }
 
