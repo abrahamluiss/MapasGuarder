@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import dmax.dialog.SpotsDialog;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -109,7 +110,11 @@ public class RegisterGuardeActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
-                    Toast.makeText(RegisterGuardeActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+
+                    //Toast.makeText(RegisterGuardeActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(RegisterGuardeActivity.this, MapGuarderiaActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);//cuando se registre ya no podra ir al atras
+                    startActivity(i);
 
                 }
                 else{

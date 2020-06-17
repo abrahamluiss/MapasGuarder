@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import dmax.dialog.SpotsDialog;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +18,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.guarderiashyo.guarderiashyo.R;
+import com.guarderiashyo.guarderiashyo.activities.guarderia.MapGuarderiaActivity;
+import com.guarderiashyo.guarderiashyo.activities.guarderia.RegisterGuardeActivity;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.models.Client;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
@@ -101,7 +104,10 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
-                    Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(RegisterActivity.this, MapClientActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);//cuando se registre ya no podra ir al atras
+                    startActivity(i);
 
                 }
                 else{
