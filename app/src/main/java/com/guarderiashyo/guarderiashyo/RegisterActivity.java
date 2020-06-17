@@ -20,13 +20,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
+import com.guarderiashyo.guarderiashyo.models.Client;
 import com.guarderiashyo.guarderiashyo.models.User;
+import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
+import com.guarderiashyo.guarderiashyo.providers.ClientProvider;
 
 public class RegisterActivity extends AppCompatActivity {
 
     SharedPreferences mPref;
-    FirebaseAuth mAuth;
-    DatabaseReference mDatabase;
+    AuthProvider mAuthProvider;
+    ClientProvider mClientProvider;
 
     AlertDialog mDialog;
     //Views
@@ -38,9 +41,10 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
         MyToolbar.show(this,"Registro", true);
 
-        mAuth = FirebaseAuth.getInstance();
+        mAuthProvider = new AuthProvider();
+        mClientProvider = new ClientProvider();
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();//referencia al nodo principal de firebase
+
 
 
         mPref = getApplicationContext().getSharedPreferences("typeUser", MODE_PRIVATE);
@@ -56,31 +60,22 @@ public class RegisterActivity extends AppCompatActivity {
         mBtnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registerUser();
+                clickRegister();
+
             }
         });
 
     }
 
-    void registerUser() {
+    void clickRegister() {
         final String name = txtInputNombre.getText().toString();
         final String email = txtInputEmail.getText().toString();
-        String password = txtInputPass.getText().toString();
+        final String password = txtInputPass.getText().toString();
         if(!name.isEmpty() && !email.isEmpty() && !password.isEmpty()){
             if(password.length() >= 6){
                 mDialog.show();
-                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        mDialog.hide();
-                        if(task.isSuccessful()){
-                            String id = mAuth.getCurrentUser().getUid();
-                            saveUser(id,name, email);
-                        }else{
-                            Toast.makeText(RegisterActivity.this, "No se pudo registrar", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                register(name,email, password);
+
             }else{
                 Toast.makeText(this, "min 6 carac", Toast.LENGTH_SHORT).show();
             }
@@ -88,7 +83,38 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Ingrese todos los campos", Toast.LENGTH_SHORT).show();
         }
     }
+    void register(final String name, final String email,final String password){
+        mAuthProvider.register(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                mDialog.hide();
+                if(task.isSuccessful()){
+                    String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    Client client =  new Client(id, name, email);
+                    create(client);
+                }else{
+                    Toast.makeText(RegisterActivity.this, "No se pudo registrar", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 
+    void create(Client client){
+        mClientProvider.create(client).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+
+                }
+                else{
+                    Toast.makeText(RegisterActivity.this, "No se pudo crear", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    /*
     void saveUser(String id,String name, String email){
         String seleccionarUser = mPref.getString("user", "");
         User user = new User();
@@ -120,4 +146,6 @@ public class RegisterActivity extends AppCompatActivity {
             });
         }
     }
+    */
+
 }
