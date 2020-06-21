@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.widget.Button;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryDataEventListener;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -40,6 +42,11 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.guarderiashyo.guarderiashyo.R;
@@ -49,8 +56,10 @@ import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
 
+import java.lang.reflect.Array;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MapClientActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -72,6 +81,12 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
 
     private List<Marker> mGuarderiaMarcadores = new ArrayList<>();
     private boolean mIsFirstTime = true;
+
+    private PlacesClient mPlaces;
+    private AutocompleteSupportFragment mAutocomplete;
+
+    private String mOrigin;
+    private LatLng mOriginLatLng;
 
 
 
@@ -125,6 +140,30 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
+        if(!Places.isInitialized()){//si no esta inicializado
+
+            Places.initialize(getApplicationContext(), getResources().getString(R.string.google_maps_key));
+        }
+
+        mPlaces = Places.createClient(this);
+        mAutocomplete = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeCompleteOrigin);
+        mAutocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mAutocomplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+
+                mOrigin = place.getName();
+                mOriginLatLng = place.getLatLng();
+                Log.d("Place", "Name: "+mOrigin);
+                Log.d("Place", "Lat: "+mOriginLatLng.latitude);
+                Log.d("Place", "Lng: "+mOriginLatLng.longitude);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+
+            }
+        });
 
     }
 

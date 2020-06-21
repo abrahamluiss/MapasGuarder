@@ -12,7 +12,26 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.SupportMapFragment"/>
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:background="@color/colorWhite"
+        app:cardCornerRadius="20dp"
+        android:layout_margin="20dp">
+
+
+        <fragment
+            android:id="@+id/placeCompleteOrigin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"/>
+    </androidx.cardview.widget.CardView>
+
+
 
 
 
