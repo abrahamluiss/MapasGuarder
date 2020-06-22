@@ -84,10 +84,14 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
 
     private PlacesClient mPlaces;
     private AutocompleteSupportFragment mAutocomplete;
+    private AutocompleteSupportFragment mAutocompleteDestination;
 
     private String mOrigin;
     private LatLng mOriginLatLng;
+    private String mDestination;
+    private LatLng mDestinationLatLng;
 
+    private GoogleMap.OnCameraIdleListener mCameraListener;
 
 
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
@@ -165,6 +169,24 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
             }
         });
 
+        mAutocompleteDestination = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeAutocompleteDestination);
+        mAutocompleteDestination.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mAutocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+
+                mDestination = place.getName();
+                mDestinationLatLng = place.getLatLng();
+                Log.d("Place", "Name: "+mDestination);
+                Log.d("Place", "Lat: "+mDestinationLatLng.latitude);
+                Log.d("Place", "Lng: "+mDestinationLatLng.longitude);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+
+            }
+        });
     }
 
     @Override
@@ -284,7 +306,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         if(requestCode == SETTINGS_REQUEST_CODE && gpsActivar()){
             mFusedLocation.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 
-        }else{
+        }else if(requestCode == SETTINGS_REQUEST_CODE && !gpsActivar()){
             mostrarDialogNoGps();
         }
     }
