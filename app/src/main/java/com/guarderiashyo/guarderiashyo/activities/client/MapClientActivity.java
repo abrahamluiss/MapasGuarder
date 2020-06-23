@@ -110,17 +110,17 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
                     //obtener la localizacion del cliente en tiempo real
 
 
-/*
-*
-*                    if(mMarker != null){
+
+
+                    if(mMarker != null){
                         mMarker.remove();//elimnar marca si ya esta
                     }
-*                     mMarker = mMap.addMarker(new MarkerOptions().position(
+                     mMarker = mMap.addMarker(new MarkerOptions().position(
                             new LatLng(location.getLatitude(), location.getLongitude())
-                            ).title("Tu posicion")
+                            ).title("Tu posicion actual")
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ubicacion))
                     );
-* */
+
 
 
                     mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
@@ -190,7 +190,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
             startActivity(i);
 
         }else{
-            Toast.makeText(this, "Seleccione el lugar de recogida y destino", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Seleccione el lugar de inicio y destino", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -227,13 +227,13 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
                 try{
 
                     Geocoder geocoder = new Geocoder(MapClientActivity.this);
-                    mOriginLatLng = mMap.getCameraPosition().target;
-                    List<Address> addressList = geocoder.getFromLocation(mOriginLatLng.latitude, mOriginLatLng.longitude, 1);
+                    mDestinationLatLng = mMap.getCameraPosition().target;
+                    List<Address> addressList = geocoder.getFromLocation(mDestinationLatLng.latitude, mDestinationLatLng.longitude, 1);
                     String ciudad = addressList.get(0).getLocality();
                     String pais = addressList.get(0).getCountryName();
                     String direccion = addressList.get(0).getAddressLine(0);
-                    mOrigin = direccion + " "+ ciudad;
-                    mAutocomplete.setText(direccion + " "+ ciudad);
+                    mDestination = direccion + " "+ ciudad;
+                    mAutocompleteDestination.setText(direccion + " "+ ciudad);
 
                 }catch (Exception e){
                     Log.d("Error: ", "Mensaje error" + e.getMessage());
@@ -350,6 +350,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
         mMap.setOnCameraIdleListener(mCameraListener);
+
 
         //mMap.setMyLocationEnabled(true);
 

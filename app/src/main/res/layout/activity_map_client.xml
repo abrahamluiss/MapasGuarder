@@ -54,13 +54,13 @@
                 />
         </androidx.cardview.widget.CardView>
     </LinearLayout>
-
+<!--
     <ImageView
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:src="@drawable/ic_location"
         android:layout_gravity="center"/>
-
+-->
     <Button
         android:id="@+id/btnRequestGuarderia"
         android:layout_width="wrap_content"
