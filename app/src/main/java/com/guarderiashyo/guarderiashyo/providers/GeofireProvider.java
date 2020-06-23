@@ -26,8 +26,8 @@ public class GeofireProvider {
     }
 
 
-    public GeoQuery getActiveGuarderias(LatLng latLng) {
-        GeoQuery geoQuery = mGeofire.queryAtLocation(new GeoLocation(latLng.latitude, latLng.longitude), 10);
+    public GeoQuery getActiveGuarderias(LatLng latLng, double radius) {
+        GeoQuery geoQuery = mGeofire.queryAtLocation(new GeoLocation(latLng.latitude, latLng.longitude), radius);
         geoQuery.removeAllListeners();
         return geoQuery;
     }
