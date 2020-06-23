@@ -61,5 +61,17 @@
         android:src="@drawable/ic_location"
         android:layout_gravity="center"/>
 
+    <Button
+        android:id="@+id/btnRequestGuarderia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounder_button"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:text="Solicitar ruta"
+        android:textColor="@color/colorWhite"
+        android:layout_gravity="bottom"
+        android:layout_margin="20dp"
+
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
