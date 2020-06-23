@@ -46,11 +46,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.maps.android.SphericalUtil;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.activities.InicioActivity;
 import com.guarderiashyo.guarderiashyo.activities.guarderia.MapGuarderiaActivity;
@@ -127,6 +129,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
                     if(mIsFirstTime){//solo se ejecutara una vez
                         mIsFirstTime = false;
                         getActiveGuarderias();
+                        limitBuscar();//limitacion solo peru
                     }
                 }
             }
@@ -156,46 +159,41 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         mPlaces = Places.createClient(this);
-        mAutocomplete = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeCompleteOrigin);
-        mAutocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
-        mAutocomplete.setHint("Lugar de inicio");
-        mAutocomplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(@NonNull Place place) {
+        instaceAutocompleteOrigin();
+        instaceAutocompleteDestino();
+        onCameraMove();
 
-                mOrigin = place.getName();
-                mOriginLatLng = place.getLatLng();
-                Log.d("Place", "Name: "+mOrigin);
-                Log.d("Place", "Lat: "+mOriginLatLng.latitude);
-                Log.d("Place", "Lng: "+mOriginLatLng.longitude);
-            }
 
-            @Override
-            public void onError(@NonNull Status status) {
 
-            }
-        });
 
-        mAutocompleteDestination = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeAutocompleteDestination);
-        mAutocompleteDestination.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
-        mAutocompleteDestination.setHint("Lugar de destino");
-        mAutocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(@NonNull Place place) {
+    }
 
-                mDestination = place.getName();
-                mDestinationLatLng = place.getLatLng();
-                Log.d("Place", "Name: "+mDestination);
-                Log.d("Place", "Lat: "+mDestinationLatLng.latitude);
-                Log.d("Place", "Lng: "+mDestinationLatLng.longitude);
-            }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.client_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-            @Override
-            public void onError(@NonNull Status status) {
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == R.id.action_logout){
+            logout();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-            }
-        });
+    private void limitBuscar(){
 
+        LatLng nortnSide = SphericalUtil.computeOffset(mActualLatLng, 5000,0);//radio de 5km
+        LatLng southSide = SphericalUtil.computeOffset(mActualLatLng, 5000,180);
+        mAutocomplete.setCountry("PE");
+        mAutocomplete.setLocationBias(RectangularBounds.newInstance(southSide, nortnSide));
+        mAutocompleteDestination.setCountry("PE");
+        mAutocomplete.setLocationBias(RectangularBounds.newInstance(southSide, nortnSide));
+
+    }
+
+    private void onCameraMove(){//mueve la camara
         mCameraListener = new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
@@ -216,21 +214,49 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
                 }
             }
         };
-
     }
+    private void instaceAutocompleteOrigin(){
+        mAutocomplete = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeCompleteOrigin);
+        mAutocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mAutocomplete.setHint("Lugar de inicio");
+        mAutocomplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.client_menu, menu);
-        return super.onCreateOptionsMenu(menu);
+                mOrigin = place.getName();
+                mOriginLatLng = place.getLatLng();
+                Log.d("Place", "Name: "+mOrigin);
+                Log.d("Place", "Lat: "+mOriginLatLng.latitude);
+                Log.d("Place", "Lng: "+mOriginLatLng.longitude);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+
+            }
+        });
     }
+    private void instaceAutocompleteDestino(){
+        mAutocompleteDestination = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.placeAutocompleteDestination);
+        mAutocompleteDestination.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+        mAutocompleteDestination.setHint("Lugar de destino");
+        mAutocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == R.id.action_logout){
-            logout();
-        }
-        return super.onOptionsItemSelected(item);
+                mDestination = place.getName();
+                mDestinationLatLng = place.getLatLng();
+                Log.d("Place", "Name: "+mDestination);
+                Log.d("Place", "Lat: "+mDestinationLatLng.latitude);
+                Log.d("Place", "Lng: "+mDestinationLatLng.longitude);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+
+            }
+        });
+
     }
 
     private void getActiveGuarderias() {
