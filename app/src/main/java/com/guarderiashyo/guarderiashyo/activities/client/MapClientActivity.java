@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryDataEventListener;
@@ -97,6 +98,8 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
 
     private GoogleMap.OnCameraIdleListener mCameraListener;
 
+    private Button mBtnRequestGuarderia;
+
 
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
         @Override
@@ -153,6 +156,8 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
+        mBtnRequestGuarderia = findViewById(R.id.btnRequestGuarderia);
+
         if(!Places.isInitialized()){//si no esta inicializado
 
             Places.initialize(getApplicationContext(), getResources().getString(R.string.google_maps_key));
@@ -164,8 +169,27 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         onCameraMove();
 
 
+        mBtnRequestGuarderia.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestGuarderia();
+            }
+        });
 
 
+    }
+    void requestGuarderia(){
+        if(mOriginLatLng != null && mDestinationLatLng != null){
+            Intent i = new Intent(MapClientActivity.this, DetailRequestActivity.class);
+            i.putExtra("origin_lat", mOriginLatLng.latitude);
+            i.putExtra("origin_lng", mOriginLatLng.longitude);
+            i.putExtra("destination_lat", mDestinationLatLng.latitude);
+            i.putExtra("destination_lng", mDestinationLatLng.longitude);
+            startActivity(i);
+
+        }else{
+            Toast.makeText(this, "Seleccione el lugar de recogida y destino", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
