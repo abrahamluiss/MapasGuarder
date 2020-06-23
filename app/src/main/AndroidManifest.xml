@@ -12,8 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.client.DetailRequestActivity"
-            android:parentActivityName=".activities.client.MapClientActivity" ></activity>
+        <activity android:name=".activities.client.RequestGuarderiaActivity"></activity>
+        <activity
+            android:name=".activities.client.DetailRequestActivity"
+            android:parentActivityName=".activities.client.MapClientActivity" />
         <activity android:name=".activities.guarderia.MapGuarderiaActivity" />
         <activity android:name=".activities.client.MapClientActivity" />
         <activity android:name=".activities.guarderia.RegisterGuardeActivity" />

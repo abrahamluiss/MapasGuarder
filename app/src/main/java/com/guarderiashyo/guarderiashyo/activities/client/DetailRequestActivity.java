@@ -5,9 +5,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -52,6 +55,7 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
     private TextView txtViewOrigin, txtViewDestino, txtViewTime, txtViewDistancia;
     private String mExtraOrigin, mExtraDestino;
 
+    private Button mBtnRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +83,23 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
         txtViewDestino = findViewById(R.id.txtViewDestino);
         txtViewTime = findViewById(R.id.txtViewTime);
         txtViewDistancia = findViewById(R.id.txtViewDistancia);
+        mBtnRequest = findViewById(R.id.btnRequestNow);
 
         txtViewOrigin.setText(mExtraOrigin);
         txtViewDestino.setText(mExtraDestino);
+
+        mBtnRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToRequestGuarderia();
+            }
+        });
+    }
+
+    private void goToRequestGuarderia() {
+        Intent i = new Intent(DetailRequestActivity.this, RequestGuarderiaActivity.class);
+        startActivity(i);
+        finish();
 
     }
 
