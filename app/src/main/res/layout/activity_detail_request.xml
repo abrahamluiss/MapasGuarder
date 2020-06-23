@@ -37,7 +37,7 @@
                 android:id="@+id/txtViewOrigin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Continental calle 5: "
+                android:text=""
                 android:textSize="16sp"/>
         </LinearLayout>
         <View
@@ -64,8 +64,66 @@
                 android:id="@+id/txtViewDestino"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Continental calle 5: "
+                android:text=""
                 android:textSize="16sp"/>
+
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            >
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiempo: "
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/txtViewTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="16sp"/>
+        </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Distancia: "
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/txtViewDistancia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+
 
         </LinearLayout>
 

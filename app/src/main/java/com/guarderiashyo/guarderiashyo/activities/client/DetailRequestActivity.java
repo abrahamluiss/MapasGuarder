@@ -8,6 +8,7 @@ import retrofit2.Response;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -48,6 +49,9 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
     private List<LatLng> mPolylineList;
     private PolylineOptions mPolylineOptions;
 
+    private TextView txtViewOrigin, txtViewDestino, txtViewTime, txtViewDistancia;
+    private String mExtraOrigin, mExtraDestino;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +66,22 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
         mExtraOriginLng = getIntent().getDoubleExtra("origin_lng", 0);
         mExtraDestinoLat = getIntent().getDoubleExtra("destination_lat", 0);
         mExtraDestinoLng = getIntent().getDoubleExtra("destination_lng", 0);
+        mExtraOrigin = getIntent().getStringExtra("origin");
+        mExtraDestino = getIntent().getStringExtra("destino");
+
 
         mOriginLatLng = new LatLng(mExtraOriginLat, mExtraOriginLng);
         mDestinoLatLng = new LatLng(mExtraDestinoLat, mExtraDestinoLng);
 
         mGoogleApiProvider = new GoogleApiProvider(DetailRequestActivity.this);
+
+        txtViewOrigin = findViewById(R.id.txtViewOrigin);
+        txtViewDestino = findViewById(R.id.txtViewDestino);
+        txtViewTime = findViewById(R.id.txtViewTime);
+        txtViewDistancia = findViewById(R.id.txtViewDistancia);
+
+        txtViewOrigin.setText(mExtraOrigin);
+        txtViewDestino.setText(mExtraDestino);
 
     }
 
@@ -83,11 +98,20 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
                     mPolylineList = DecodePoints.decodePoly(points);
                     mPolylineOptions = new PolylineOptions();
                     mPolylineOptions.color(Color.DKGRAY);//color
-                    mPolylineOptions.width(8f);//grosor
+                    mPolylineOptions.width(10f);//grosor
                     mPolylineOptions.startCap(new SquareCap());
                     mPolylineOptions.jointType(JointType.ROUND);
                     mPolylineOptions.addAll(mPolylineList);
                     mMap.addPolyline(mPolylineOptions);
+
+                    JSONArray legs = route.getJSONArray("legs");
+                    JSONObject leg = legs.getJSONObject(0);
+                    JSONObject distancia = leg.getJSONObject("distance");
+                    JSONObject duration = leg.getJSONObject("duration");
+                    String distanciaText = distancia.getString("text");
+                    String duracionText = duration.getString("text");
+                    txtViewTime.setText(duracionText);
+                    txtViewDistancia.setText(distanciaText);
 
                 } catch (Exception e){
                     Log.d("Error", "Error encontrado"+e.getMessage());

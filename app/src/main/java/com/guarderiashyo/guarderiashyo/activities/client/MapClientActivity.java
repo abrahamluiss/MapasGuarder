@@ -185,6 +185,8 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
             i.putExtra("origin_lng", mOriginLatLng.longitude);
             i.putExtra("destination_lat", mDestinationLatLng.latitude);
             i.putExtra("destination_lng", mDestinationLatLng.longitude);
+            i.putExtra("origin", mOrigin);
+            i.putExtra("destino", mDestination);
             startActivity(i);
 
         }else{
