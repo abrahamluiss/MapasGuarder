@@ -47,6 +47,7 @@ import com.guarderiashyo.guarderiashyo.activities.client.MapClientActivity;
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
+import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
 
 public class MapGuarderiaActivity extends AppCompatActivity implements OnMapReadyCallback {
     Button btnCerrarSesion;
@@ -55,6 +56,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
     private GoogleMap mMap;
     private SupportMapFragment mMapFragment;
+    private TokenProviders mTokenProvider;
 
     private LocationRequest mLocationRequest;
     private FusedLocationProviderClient mFusedLocation;
@@ -113,6 +115,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
         mAuthProvider = new AuthProvider();
         mGeofireProvider = new GeofireProvider();
+        mTokenProvider = new TokenProviders();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
@@ -127,6 +130,8 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
                 }
             }
         });
+
+        generateToken();
     }
 
 
@@ -298,5 +303,9 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         startActivity(i);
         finish();
 
+    }
+    void generateToken(){
+
+        mTokenProvider.create(mAuthProvider.getId());
     }
 }

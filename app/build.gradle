@@ -40,6 +40,8 @@ dependencies {
     implementation "com.google.android.libraries.places:places:1.1.0"
     implementation 'com.google.maps.android:android-maps-utils:0.5'
 
+    implementation 'com.google.firebase:firebase-messaging:20.1.0'
+
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'

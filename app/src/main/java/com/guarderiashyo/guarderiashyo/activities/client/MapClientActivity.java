@@ -60,6 +60,7 @@ import com.guarderiashyo.guarderiashyo.activities.guarderia.MapGuarderiaActivity
 import com.guarderiashyo.guarderiashyo.includes.MyToolbar;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
+import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
 
 import java.lang.reflect.Array;
 import java.security.Key;
@@ -82,6 +83,8 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
     private Marker mMarker;
 
     private GeofireProvider mGeofireProvider;
+    private TokenProviders mTokenProvider;
+
     private LatLng mActualLatLng;
 
     private List<Marker> mGuarderiaMarcadores = new ArrayList<>();
@@ -153,6 +156,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         mGeofireProvider = new GeofireProvider();
         mAuthProvider = new AuthProvider();
 
+        mTokenProvider = new TokenProviders();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
 
@@ -177,6 +181,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         });
 
 
+        generateToken();
     }
     void requestGuarderia(){
         if(mOriginLatLng != null && mDestinationLatLng != null){
@@ -473,5 +478,10 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         startActivity(i);
         finish();
 
+    }
+
+    void generateToken(){
+
+        mTokenProvider.create(mAuthProvider.getId());
     }
 }
