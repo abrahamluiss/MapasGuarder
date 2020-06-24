@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -15,17 +16,29 @@ import android.widget.Toast;
 import com.airbnb.lottie.LottieAnimationView;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.SquareCap;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
+import com.guarderiashyo.guarderiashyo.Utils.DecodePoints;
+import com.guarderiashyo.guarderiashyo.models.ClientBooking;
 import com.guarderiashyo.guarderiashyo.models.FCMBody;
 import com.guarderiashyo.guarderiashyo.models.FCMResponse;
 import com.guarderiashyo.guarderiashyo.models.Token;
+import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
+import com.guarderiashyo.guarderiashyo.providers.ClientBookingProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
+import com.guarderiashyo.guarderiashyo.providers.GoogleApiProvider;
 import com.guarderiashyo.guarderiashyo.providers.NotificationProvider;
 import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.security.Key;
 import java.util.HashMap;
@@ -41,15 +54,23 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
     private double mExtraOriginLat;
     private double mExtraOriginLng;
+    private double mExtraDestinationLat;
+    private double mExtraDestinationLng;
     private LatLng mOriginLatLng;
+    private LatLng mDestinationLatLng;
+
 
     double mRadius = 0.1;
     boolean mGuarderiaFound = false;
     String mIdGuarderiaFound = "";
     LatLng mGuarderiaFoundLatLng;
 
+    String mExtraOrigin, mExtraDestination;
     NotificationProvider mNotificationProvider;
     TokenProviders mtokenProvider;
+    ClientBookingProvider mClientBookingProvider;
+    AuthProvider mAuthProvider;
+    GoogleApiProvider mGoogleApiProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,14 +82,22 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
         mAnimation.playAnimation();
 
+        mExtraOrigin = getIntent().getStringExtra("origin");
+        mExtraDestination = getIntent().getStringExtra("destination");
         mExtraOriginLat = getIntent().getDoubleExtra("origin_lat",0);
         mExtraOriginLng = getIntent().getDoubleExtra("origin_lng",0);
+        mExtraDestinationLat = getIntent().getDoubleExtra("destination_lat",0);
+        mExtraDestinationLng = getIntent().getDoubleExtra("destination_lng",0);
         mOriginLatLng = new LatLng(mExtraOriginLat, mExtraOriginLng);
+        mDestinationLatLng = new LatLng(mExtraDestinationLat, mExtraDestinationLng);
 
+        mGoogleApiProvider = new GoogleApiProvider(RequestGuarderiaActivity.this);
         mGeofireProvider = new GeofireProvider();
 
         mNotificationProvider = new NotificationProvider();
         mtokenProvider = new TokenProviders();
+        mClientBookingProvider = new ClientBookingProvider();
+        mAuthProvider = new AuthProvider();
         getClosesGuarderias();
     }
 
@@ -84,7 +113,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                     mGuarderiaFoundLatLng = new LatLng(location.latitude, location.longitude);
                     mTxtViewLookingFor.setText("Guarderia Disponible\n Esperando respuesta");
 
-                    sendNotification();
+                    createClientBooking();
                     Log.d("Guarderia", "ID: "+mIdGuarderiaFound);
                 }
             }
@@ -123,21 +152,76 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
         });
     }
 
-    private void sendNotification() {
+    void createClientBooking(){
+
+        mGoogleApiProvider.getDirections(mOriginLatLng, mGuarderiaFoundLatLng).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response.body());
+                    JSONArray jsonArray = jsonObject.getJSONArray("routes");
+                    JSONObject route = jsonArray.getJSONObject(0);
+                    JSONObject polylines = route.getJSONObject("overview_polyline");
+                    String points = polylines.getString("points");
+                    JSONArray legs = route.getJSONArray("legs");
+                    JSONObject leg = legs.getJSONObject(0);
+                    JSONObject distancia = leg.getJSONObject("distance");
+                    JSONObject duration = leg.getJSONObject("duration");
+                    String distanciaText = distancia.getString("text");
+                    String duracionText = duration.getString("text");
+
+                    sendNotification(duracionText, distanciaText);
+
+
+                } catch (Exception e){
+                    Log.d("Error", "Error encontrado"+e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void sendNotification(final String time, final String km) {
         mtokenProvider.getToken(mIdGuarderiaFound).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {//contiene la inf del nodo del token
                 if(dataSnapshot.exists()){
                     String token = dataSnapshot.child("token").getValue().toString();
                     Map<String, String> map = new HashMap<>();
-                    map.put("title","SOLICITUD DE SERVICIO");
-                    map.put("body","Un cliente esta solicitando el servicio");
+                    map.put("title","SOLICITUD DE SERVICIO A "+ time + "DE TU POSICIÓN");
+                    map.put("body","Un cliente esta solicitando el servicio a una distancia de "+km);
                     FCMBody fcmBody = new FCMBody(token, "high", map);
                     mNotificationProvider.sendNotification(fcmBody).enqueue(new Callback<FCMResponse>() {
                         @Override
                         public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                             if(response.body() != null){
                                 if(response.body().getSuccess() == 1){
+                                    ClientBooking clientBooking = new ClientBooking(
+                                            mAuthProvider.getId(),
+                                            mIdGuarderiaFound,
+                                            mExtraDestination,
+                                            mExtraOrigin,
+                                            time,
+                                            km,
+                                            "create",
+                                            mExtraOriginLat,
+                                            mExtraOriginLng,
+                                            mExtraDestinationLat,
+                                            mExtraDestinationLng
+
+                                    );
+                                    mClientBookingProvider.create(clientBooking).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+
+                                            Toast.makeText(RequestGuarderiaActivity.this, "La peticion se creo correctamente", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                     Toast.makeText(RequestGuarderiaActivity.this, "Notificación enviada", Toast.LENGTH_SHORT).show();
                                 }else{
                                     Toast.makeText(RequestGuarderiaActivity.this, "No se envio la notificacion", Toast.LENGTH_SHORT).show();

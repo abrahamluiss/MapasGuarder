@@ -100,6 +100,10 @@ public class DetailRequestActivity extends AppCompatActivity implements OnMapRea
         Intent i = new Intent(DetailRequestActivity.this, RequestGuarderiaActivity.class);
         i.putExtra("origin_lat", mOriginLatLng.latitude);
         i.putExtra("origin_lng", mOriginLatLng.longitude);
+        i.putExtra("origin", mExtraOrigin);
+        i.putExtra("destination", mExtraDestino);
+        i.putExtra("destination_lat", mDestinoLatLng.latitude);
+        i.putExtra("destination_lng", mDestinoLatLng.longitude);
         startActivity(i);
         finish();
 
