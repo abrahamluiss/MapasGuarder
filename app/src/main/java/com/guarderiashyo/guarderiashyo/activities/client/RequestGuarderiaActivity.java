@@ -1,6 +1,10 @@
 package com.guarderiashyo.guarderiashyo.activities.client;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -12,11 +16,20 @@ import com.airbnb.lottie.LottieAnimationView;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
+import com.guarderiashyo.guarderiashyo.models.FCMBody;
+import com.guarderiashyo.guarderiashyo.models.FCMResponse;
+import com.guarderiashyo.guarderiashyo.models.Token;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
+import com.guarderiashyo.guarderiashyo.providers.NotificationProvider;
+import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
 
 import java.security.Key;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RequestGuarderiaActivity extends AppCompatActivity {
 
@@ -35,6 +48,9 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
     String mIdGuarderiaFound = "";
     LatLng mGuarderiaFoundLatLng;
 
+    NotificationProvider mNotificationProvider;
+    TokenProviders mtokenProvider;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +67,8 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
         mGeofireProvider = new GeofireProvider();
 
+        mNotificationProvider = new NotificationProvider();
+        mtokenProvider = new TokenProviders();
         getClosesGuarderias();
     }
 
@@ -66,6 +84,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                     mGuarderiaFoundLatLng = new LatLng(location.latitude, location.longitude);
                     mTxtViewLookingFor.setText("Guarderia Disponible\n Esperando respuesta");
 
+                    sendNotification();
                     Log.d("Guarderia", "ID: "+mIdGuarderiaFound);
                 }
             }
@@ -102,5 +121,50 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void sendNotification() {
+        mtokenProvider.getToken(mIdGuarderiaFound).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {//contiene la inf del nodo del token
+                if(dataSnapshot.exists()){
+                    String token = dataSnapshot.child("token").getValue().toString();
+                    Map<String, String> map = new HashMap<>();
+                    map.put("title","SOLICITUD DE SERVICIO");
+                    map.put("body","Un cliente esta solicitando el servicio");
+                    FCMBody fcmBody = new FCMBody(token, "high", map);
+                    mNotificationProvider.sendNotification(fcmBody).enqueue(new Callback<FCMResponse>() {
+                        @Override
+                        public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                            if(response.body() != null){
+                                if(response.body().getSuccess() == 1){
+                                    Toast.makeText(RequestGuarderiaActivity.this, "Notificación enviada", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Toast.makeText(RequestGuarderiaActivity.this, "No se envio la notificacion", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            else{
+                                Toast.makeText(RequestGuarderiaActivity.this, "No se pudo enviar la notificación", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<FCMResponse> call, Throwable t) {
+                            Log.d("Error", "Error" + t.getMessage());
+
+                        }
+                    });
+                }else{
+                    Toast.makeText(RequestGuarderiaActivity.this, "No se pudo enviar la notificacion porque la guarderia no tiene un token de sesión", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }
