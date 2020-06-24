@@ -153,7 +153,7 @@ public class MapClientActivity extends AppCompatActivity implements OnMapReadyCa
         mMapFragment.getMapAsync(this);
 
 
-        mGeofireProvider = new GeofireProvider();
+        mGeofireProvider = new GeofireProvider("active_guarderias");
         mAuthProvider = new AuthProvider();
 
         mTokenProvider = new TokenProviders();

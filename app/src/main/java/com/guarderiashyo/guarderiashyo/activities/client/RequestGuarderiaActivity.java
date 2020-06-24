@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -71,6 +72,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
     ClientBookingProvider mClientBookingProvider;
     AuthProvider mAuthProvider;
     GoogleApiProvider mGoogleApiProvider;
+    private ValueEventListener mListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +94,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
         mDestinationLatLng = new LatLng(mExtraDestinationLat, mExtraDestinationLng);
 
         mGoogleApiProvider = new GoogleApiProvider(RequestGuarderiaActivity.this);
-        mGeofireProvider = new GeofireProvider();
+        mGeofireProvider = new GeofireProvider("active_guarderias");
 
         mNotificationProvider = new NotificationProvider();
         mtokenProvider = new TokenProviders();
@@ -219,6 +221,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess(Void aVoid) {
 
+                                            checkStatusClientBooking();
                                             Toast.makeText(RequestGuarderiaActivity.this, "La peticion se creo correctamente", Toast.LENGTH_SHORT).show();
                                         }
                                     });
@@ -250,5 +253,39 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
             }
         });
 
+    }
+    private void checkStatusClientBooking() {
+        mListener = mClientBookingProvider.getStatus(mAuthProvider.getId()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+
+                    String status = dataSnapshot.getValue().toString();
+                    if (status.equals("accept")) {
+                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapClientBookingActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else if (status.equals("cancel")) {
+                        Toast.makeText(RequestGuarderiaActivity.this, "La guarderia no acepto", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapClientActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mListener != null) {
+            mClientBookingProvider.getStatus(mAuthProvider.getId()).removeEventListener(mListener);
+        }
     }
 }

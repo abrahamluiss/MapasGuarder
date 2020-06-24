@@ -41,6 +41,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.activities.InicioActivity;
 import com.guarderiashyo.guarderiashyo.activities.client.MapClientActivity;
@@ -71,6 +74,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     private  boolean mIsConnect = false;
 
     private LatLng mActualLatLng;
+    ValueEventListener mListener;
 
     LocationCallback mLocationCallback = new LocationCallback(){//si se mueve lo registra
         @Override
@@ -114,7 +118,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
 
 
         mAuthProvider = new AuthProvider();
-        mGeofireProvider = new GeofireProvider();
+        mGeofireProvider = new GeofireProvider("active_guarderias");
         mTokenProvider = new TokenProviders();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);//iniciar o detener la ubicacion de user
@@ -132,6 +136,31 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
         });
 
         generateToken();
+        isGuarderiWorking();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mListener !=null){
+            mGeofireProvider.isGuarderiaWorking(mAuthProvider.getId()).removeEventListener(mListener);
+        }
+    }
+
+    void isGuarderiWorking(){
+        mListener = mGeofireProvider.isGuarderiaWorking(mAuthProvider.getId()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    desconectar();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
