@@ -2,6 +2,7 @@ package com.guarderiashyo.guarderiashyo.activities.guarderia;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,6 +10,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import android.Manifest;
 import android.content.Context;
@@ -21,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,18 +41,30 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.SquareCap;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
+import com.guarderiashyo.guarderiashyo.Utils.DecodePoints;
+import com.guarderiashyo.guarderiashyo.activities.client.DetailRequestActivity;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
+import com.guarderiashyo.guarderiashyo.providers.ClientBookingProvider;
 import com.guarderiashyo.guarderiashyo.providers.ClientProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
+import com.guarderiashyo.guarderiashyo.providers.GoogleApiProvider;
 import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.List;
 
 public class MapGuarderiaBookingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -56,6 +73,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private AuthProvider mAuthProvider;
     private GeofireProvider mGeofireProvider;
     private ClientProvider mClientProvider;
+    private ClientBookingProvider mClientBookingProvider;
     private TokenProviders mTokenProvider;
 
 
@@ -68,8 +86,16 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private Marker mMarker;
     private LatLng mCurrentLatLng;
 
-    TextView txtViewClientBooking, txtViewClientEmail;
+    TextView txtViewClientBooking, txtViewClientEmail, txtViewOriginBooking, txtViewDestinationBooking;
     String mExtraClientId;
+
+    private LatLng mOriginLatLng;
+    private LatLng mDestinoLatLng;
+
+    private GoogleApiProvider mGoogleApiProvider;
+
+    private List<LatLng> mPolylineList;
+    private PolylineOptions mPolylineOptions;
 
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
@@ -113,6 +139,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         mGeofireProvider = new GeofireProvider("guarderias_working");
         mTokenProvider = new TokenProviders();
         mClientProvider = new ClientProvider();
+        mClientBookingProvider = new ClientBookingProvider();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
 
@@ -121,11 +148,82 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
 
         txtViewClientBooking = findViewById(R.id.txtViewClientBooking);
         txtViewClientEmail = findViewById(R.id.txtViewEmailClientBooking);
+        txtViewOriginBooking = findViewById(R.id.txtViewOriginClientBooking);
+        txtViewDestinationBooking = findViewById(R.id.txtViewDestinationClientBooking);
 
         mExtraClientId = getIntent().getStringExtra("idClient");
-        getClientBooking();
+        mGoogleApiProvider = new GoogleApiProvider(MapGuarderiaBookingActivity.this);
+
+        getClient();//obtenemos la inf del cliente
+        getClientBooking();//informacion de la solicitud del place
     }
     void getClientBooking(){
+        mClientBookingProvider.getClientBooking(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    String destino = dataSnapshot.child("destination").getValue().toString();
+                    String origin = dataSnapshot.child("origin").getValue().toString();
+                    double destinoLat = Double.parseDouble(dataSnapshot.child("destinationLat").getValue().toString());
+                    double destinoLng = Double.parseDouble(dataSnapshot.child("destinationLng").getValue().toString());
+
+                    double originLat = Double.parseDouble(dataSnapshot.child("originLat").getValue().toString());
+                    double originLng = Double.parseDouble(dataSnapshot.child("originLng").getValue().toString());
+                    mOriginLatLng = new LatLng(originLat, originLng);
+                    mDestinoLatLng = new LatLng(destinoLat, destinoLng);
+
+                    txtViewOriginBooking.setText("Ubicación: "+origin);
+                    txtViewDestinationBooking.setText("Destino: "+destino);
+                    drawRoute();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void drawRoute(){
+        mGoogleApiProvider.getDirections(mOriginLatLng, mDestinoLatLng).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response.body());
+                    JSONArray jsonArray = jsonObject.getJSONArray("routes");
+                    JSONObject route = jsonArray.getJSONObject(0);
+                    JSONObject polylines = route.getJSONObject("overview_polyline");
+                    String points = polylines.getString("points");
+                    mPolylineList = DecodePoints.decodePoly(points);
+                    mPolylineOptions = new PolylineOptions();
+                    mPolylineOptions.color(Color.DKGRAY);//color
+                    mPolylineOptions.width(10f);//grosor
+                    mPolylineOptions.startCap(new SquareCap());
+                    mPolylineOptions.jointType(JointType.ROUND);
+                    mPolylineOptions.addAll(mPolylineList);
+                    mMap.addPolyline(mPolylineOptions);
+
+                    JSONArray legs = route.getJSONArray("legs");
+                    JSONObject leg = legs.getJSONObject(0);
+                    JSONObject distancia = leg.getJSONObject("distance");
+                    JSONObject duration = leg.getJSONObject("duration");
+                    String distanciaText = distancia.getString("text");
+                    String duracionText = duration.getString("text");
+
+
+                } catch (Exception e){
+                    Log.d("Error", "Error encontrado"+e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+
+            }
+        });
+    }
+    void getClient(){
         mClientProvider.getClient(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
