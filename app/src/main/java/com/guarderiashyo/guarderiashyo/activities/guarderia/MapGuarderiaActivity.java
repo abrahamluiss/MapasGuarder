@@ -142,7 +142,7 @@ public class MapGuarderiaActivity extends AppCompatActivity implements OnMapRead
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mListener !=null){
+        if(mListener != null){
             mGeofireProvider.isGuarderiaWorking(mAuthProvider.getId()).removeEventListener(mListener);
         }
     }

@@ -59,7 +59,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         setContentView(R.layout.activity_map_client_booking);
 
         mAuthProvider = new AuthProvider();
-        mGeofireProvider = new GeofireProvider("working_guarderia");
+        mGeofireProvider = new GeofireProvider("working_guarderias");
         mTokenProvider = new TokenProviders();
 
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);

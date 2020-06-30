@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.Utils.DecodePoints;
+import com.guarderiashyo.guarderiashyo.activities.guarderia.MapGuarderiaBookingActivity;
 import com.guarderiashyo.guarderiashyo.models.ClientBooking;
 import com.guarderiashyo.guarderiashyo.models.FCMBody;
 import com.guarderiashyo.guarderiashyo.models.FCMResponse;
@@ -93,13 +94,14 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
         mOriginLatLng = new LatLng(mExtraOriginLat, mExtraOriginLng);
         mDestinationLatLng = new LatLng(mExtraDestinationLat, mExtraDestinationLng);
 
-        mGoogleApiProvider = new GoogleApiProvider(RequestGuarderiaActivity.this);
-        mGeofireProvider = new GeofireProvider("active_guarderias");
 
-        mNotificationProvider = new NotificationProvider();
+        mGeofireProvider = new GeofireProvider("active_guarderias");
         mtokenProvider = new TokenProviders();
+        mNotificationProvider = new NotificationProvider();
+
         mClientBookingProvider = new ClientBookingProvider();
         mAuthProvider = new AuthProvider();
+        mGoogleApiProvider = new GoogleApiProvider(RequestGuarderiaActivity.this);
         getClosesGuarderias();
     }
 
@@ -197,6 +199,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                     Map<String, String> map = new HashMap<>();
                     map.put("title","SOLICITUD DE SERVICIO A "+ time + "DE TU POSICIÓN");
                     map.put("body","Un cliente esta solicitando el servicio a una distancia de "+km);
+                    map.put("idClient", mAuthProvider.getId());
                     FCMBody fcmBody = new FCMBody(token, "high", map);
                     mNotificationProvider.sendNotification(fcmBody).enqueue(new Callback<FCMResponse>() {
                         @Override
@@ -222,7 +225,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                                         public void onSuccess(Void aVoid) {
 
                                             checkStatusClientBooking();
-                                            Toast.makeText(RequestGuarderiaActivity.this, "La peticion se creo correctamente", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(RequestGuarderiaActivity.this, "La peticion se creo correctamente", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                     Toast.makeText(RequestGuarderiaActivity.this, "Notificación enviada", Toast.LENGTH_SHORT).show();
@@ -262,7 +265,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
                     String status = dataSnapshot.getValue().toString();
                     if (status.equals("accept")) {
-                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapClientBookingActivity.class);
+                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapGuarderiaBookingActivity.class);
                         startActivity(intent);
                         finish();
                     } else if (status.equals("cancel")) {

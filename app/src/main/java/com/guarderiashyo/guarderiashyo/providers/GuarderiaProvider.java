@@ -20,7 +20,7 @@ public class GuarderiaProvider {
         map.put("name", guarderia.getName());
         map.put("email", guarderia.getEmail());
         map.put("ruc", guarderia.getRuc());
-        map.put("trabajadores", guarderia.getTrabajadores());
+        map.put("servicios", guarderia.getTrabajadores());
 
         return  mDatabase.child(guarderia.getId()).setValue(map);
     }
