@@ -97,6 +97,8 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private List<LatLng> mPolylineList;
     private PolylineOptions mPolylineOptions;
 
+    private boolean mIsFirstTime = true;
+
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -124,6 +126,11 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
                     ));
 
                     updateLocation();
+
+                    if(mIsFirstTime){//solo se ejecutara una vez
+                        mIsFirstTime = false;
+                        getClientBooking();
+                    }
 
                 }
             }
@@ -155,7 +162,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         mGoogleApiProvider = new GoogleApiProvider(MapGuarderiaBookingActivity.this);
 
         getClient();//obtenemos la inf del cliente
-        getClientBooking();//informacion de la solicitud del place
+        //getClientBooking();//informacion de la solicitud del place
     }
     void getClientBooking(){
         mClientBookingProvider.getClientBooking(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -171,6 +178,8 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
                     double originLng = Double.parseDouble(dataSnapshot.child("originLng").getValue().toString());
                     mOriginLatLng = new LatLng(originLat, originLng);
                     mDestinoLatLng = new LatLng(destinoLat, destinoLng);
+                    mMap.addMarker(new MarkerOptions().position(mOriginLatLng).title("Cliente").icon(BitmapDescriptorFactory.fromResource(R.drawable.bandera_roja)));
+
 
                     txtViewOriginBooking.setText("Ubicación: "+origin);
                     txtViewDestinationBooking.setText("Destino: "+destino);
@@ -186,7 +195,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     }
 
     private void drawRoute(){
-        mGoogleApiProvider.getDirections(mOriginLatLng, mDestinoLatLng).enqueue(new Callback<String>() {
+        mGoogleApiProvider.getDirections(mCurrentLatLng, mOriginLatLng).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 try {
