@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,8 +40,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
+import com.guarderiashyo.guarderiashyo.providers.ClientProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
 import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
 
@@ -50,6 +55,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private SupportMapFragment mMapFragment;
     private AuthProvider mAuthProvider;
     private GeofireProvider mGeofireProvider;
+    private ClientProvider mClientProvider;
     private TokenProviders mTokenProvider;
 
 
@@ -61,6 +67,9 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
 
     private Marker mMarker;
     private LatLng mCurrentLatLng;
+
+    TextView txtViewClientBooking, txtViewClientEmail;
+    String mExtraClientId;
 
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
@@ -103,11 +112,36 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         mAuthProvider = new AuthProvider();
         mGeofireProvider = new GeofireProvider("guarderias_working");
         mTokenProvider = new TokenProviders();
+        mClientProvider = new ClientProvider();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
 
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
+
+        txtViewClientBooking = findViewById(R.id.txtViewClientBooking);
+        txtViewClientEmail = findViewById(R.id.txtViewEmailClientBooking);
+
+        mExtraClientId = getIntent().getStringExtra("idClient");
+        getClientBooking();
+    }
+    void getClientBooking(){
+        mClientProvider.getClient(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    String email = dataSnapshot.child("email").getValue().toString();
+                    String name = dataSnapshot.child("name").getValue().toString();
+                    txtViewClientBooking.setText(name);
+                    txtViewClientEmail.setText(email);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void updateLocation() {

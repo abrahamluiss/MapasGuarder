@@ -4,12 +4,109 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".activities.guarderia.MapGuarderiaBookingActivity">
+    <Button
+        android:id="@+id/btnStartBooking"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="INICIAR VIAJE"
+        android:background="@drawable/rounder_button"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:textColor="@color/colorWhite"
+        android:layout_margin="30dp" />
 
-    <fragment
-        android:id="@+id/map"
+    <Button
+        android:id="@+id/btnFinishBooking"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="FINALIZAR VIAJE"
+        android:background="@drawable/rounder_button"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:visibility="gone"
+        android:layout_margin="30dp" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        />
+        android:orientation="vertical" >
+
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="10dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imageViewClientBooking"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/madre" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/txtViewOriginClientBooking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lugar de recogida"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:id="@+id/txtViewDestinationClientBooking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Destino"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:id="@+id/txtViewClientBooking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre del usuario"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:id="@+id/txtViewEmailClientBooking"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Email del usuario"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
