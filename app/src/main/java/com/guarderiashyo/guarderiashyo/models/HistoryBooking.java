@@ -1,6 +1,8 @@
 package com.guarderiashyo.guarderiashyo.models;
 
-public class ClientBooking {
+import android.location.Location;
+
+public class HistoryBooking {
 
     String idHistoryBooking;
     String idClient;
@@ -14,26 +16,16 @@ public class ClientBooking {
     double originLng;
     double destinationLat;
     double destinationLng;
+    double calificationClient;
+    double calificationGuarder;
+    Long timestamp;
     //aqui agregar para servicio o disponibles
-    public ClientBooking(){
+    public HistoryBooking(){
 
     }
 
-    public ClientBooking(String idClient, String idGuarderia, String destination, String origin, String time, String km, String status, double originLat, double originLng, double destinationLat, double destinationLng) {
-        this.idClient = idClient;
-        this.idGuarderia = idGuarderia;
-        this.destination = destination;
-        this.origin = origin;
-        this.time = time;
-        this.km = km;
-        this.status = status;
-        this.originLat = originLat;
-        this.originLng = originLng;
-        this.destinationLat = destinationLat;
-        this.destinationLng = destinationLng;
-    }
 
-    public ClientBooking(String idHistoryBooking, String idClient, String idGuarderia, String destination, String origin, String time, String km, String status, double originLat, double originLng, double destinationLat, double destinationLng) {
+    public HistoryBooking(String idHistoryBooking,String idClient, String idGuarderia, String destination, String origin, String time, String km, String status, double originLat, double originLng, double destinationLat, double destinationLng) {
         this.idHistoryBooking = idHistoryBooking;
         this.idClient = idClient;
         this.idGuarderia = idGuarderia;
@@ -46,6 +38,14 @@ public class ClientBooking {
         this.originLng = originLng;
         this.destinationLat = destinationLat;
         this.destinationLng = destinationLng;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getIdHistoryBooking() {
@@ -54,6 +54,22 @@ public class ClientBooking {
 
     public void setIdHistoryBooking(String idHistoryBooking) {
         this.idHistoryBooking = idHistoryBooking;
+    }
+
+    public double getCalificationClient() {
+        return calificationClient;
+    }
+
+    public void setCalificationClient(double calificationClient) {
+        this.calificationClient = calificationClient;
+    }
+
+    public double getCalificationGuarder() {
+        return calificationGuarder;
+    }
+
+    public void setCalificationGuarder(double calificationGuarder) {
+        this.calificationGuarder = calificationGuarder;
     }
 
     public String getIdClient() {

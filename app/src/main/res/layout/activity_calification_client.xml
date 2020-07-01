@@ -6,11 +6,110 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".activities.guarderia.CalificationClientActivity">
-    <TextView
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="CALIFICAR CLIENTE"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="22sp" />
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="30dp"
+                    app:lottie_autoPlay="true"
+                    app:lottie_fileName="stars.json"
+                    app:lottie_imageAssetsFolder="assets"
+                    app:lottie_loop="true" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Porfavor califica al cliente"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp" />
+
+                <RatingBar
+                    android:id="@+id/ratingbarCalification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="30dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Lugar"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/white"
+                    android:textSize="2sp" />
+
+                <TextView
+                    android:id="@+id/textViewOriginCalification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="Cr falsa con avenida false"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="2sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Servicio"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/white"
+                    android:textSize="2sp" />
+
+                <TextView
+                    android:id="@+id/textViewDestinationCalification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="Cr falsa con avenida false"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="2sp" />
+            </LinearLayout>
+        </ScrollView>
+
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnCalification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Calificar guarderia">
+        android:layout_gravity="bottom"
+        android:background="@drawable/rounder_button"
+        android:text="CALIFICAR CLIENTE"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:textColor="@color/colorWhite"
+        android:layout_margin="20dp" />
 
-    </TextView>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

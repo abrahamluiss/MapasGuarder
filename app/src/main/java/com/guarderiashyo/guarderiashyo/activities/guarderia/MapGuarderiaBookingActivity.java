@@ -207,13 +207,16 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     }
 
     private void finishBooking() {
+        mClientBookingProvider.updateStatus(mExtraClientId, "finish");
+        mClientBookingProvider.updateIdHistoryBooking(mExtraClientId);
         sendNotification("Ida finalizada");
         if(mFusedLocation != null){
             mFusedLocation.removeLocationUpdates(mLocationCallback);
         }
         mGeofireProvider.removeLocation(mAuthProvider.getId());
-        mClientBookingProvider.updateStatus(mExtraClientId, "finish");
+
         Intent i = new Intent(MapGuarderiaBookingActivity.this, CalificationClientActivity.class);
+        i.putExtra("idClient", mExtraClientId);
         startActivity(i);
         finish();
     }
