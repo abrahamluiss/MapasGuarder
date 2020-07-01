@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,6 +100,9 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
 
     private boolean mIsFirstTime = true;
 
+    private Button mButtonStartBooking;
+    private Button mButtonFinishBooking;
+
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -157,12 +161,42 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         txtViewClientEmail = findViewById(R.id.txtViewEmailClientBooking);
         txtViewOriginBooking = findViewById(R.id.txtViewOriginClientBooking);
         txtViewDestinationBooking = findViewById(R.id.txtViewDestinationClientBooking);
+        mButtonStartBooking = findViewById(R.id.btnStartBooking);
+        mButtonFinishBooking = findViewById(R.id.btnFinishBooking);
 
         mExtraClientId = getIntent().getStringExtra("idClient");
         mGoogleApiProvider = new GoogleApiProvider(MapGuarderiaBookingActivity.this);
 
         getClient();//obtenemos la inf del cliente
         //getClientBooking();//informacion de la solicitud del place
+
+
+        mButtonStartBooking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                    startBooking();
+
+
+            }
+        });
+
+        mButtonFinishBooking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finishBooking();
+            }
+        });
+    }
+
+    private void finishBooking() {
+        mClientBookingProvider.updateStatus(mExtraClientId, "finish");
+    }
+    private void startBooking() {
+        mClientBookingProvider.updateStatus(mExtraClientId, "start");
+        mButtonStartBooking.setVisibility(View.GONE);
+        mButtonFinishBooking.setVisibility(View.VISIBLE);
+
     }
     void getClientBooking(){
         mClientBookingProvider.getClientBooking(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {

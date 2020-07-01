@@ -265,7 +265,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
 
                     String status = dataSnapshot.getValue().toString();
                     if (status.equals("accept")) {
-                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapGuarderiaBookingActivity.class);
+                        Intent intent = new Intent(RequestGuarderiaActivity.this, MapClientBookingActivity.class);
                         startActivity(intent);
                         finish();
                     } else if (status.equals("cancel")) {

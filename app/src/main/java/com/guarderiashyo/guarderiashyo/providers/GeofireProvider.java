@@ -32,9 +32,9 @@ public class GeofireProvider {
         return geoQuery;
     }
 
-    //public DatabaseReference getGuarderiaLocation(String idGuarderia) {
-     //   return mDatabase.child(idGuarderia).child("l");
-    //}
+    public DatabaseReference getGuarderiaLocation(String idGuarderia) {
+        return mDatabase.child(idGuarderia).child("l");
+    }
 
     public DatabaseReference isGuarderiaWorking(String idGuarderia) {
         return FirebaseDatabase.getInstance().getReference().child("guarderias_working").child(idGuarderia);
