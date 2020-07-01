@@ -7,6 +7,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -76,6 +77,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
     private LatLng mGuarderLatLng;
 
     TextView txtViewClientBooking, txtViewClientEmailBooking, txtViewOriginClientBooking, txtViewDestinationClientBooking;
+    TextView mtxtViewStatusBooking;
     private GoogleApiProvider mGoogleApiProvider;
 
     private List<LatLng> mPolylineList;
@@ -94,7 +96,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         setContentView(R.layout.activity_map_client_booking);
 
         mAuthProvider = new AuthProvider();
-        mGeofireProvider = new GeofireProvider("working_guarderias");
+        mGeofireProvider = new GeofireProvider("guarderias_working");
         mTokenProvider = new TokenProviders();
         mClientBookingProvider = new ClientBookingProvider();
         mGoogleApiProvider = new GoogleApiProvider(MapClientBookingActivity.this);
@@ -114,9 +116,49 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         txtViewClientEmailBooking = findViewById(R.id.textViewEmailGuarderBooking);
         txtViewOriginClientBooking = findViewById(R.id.txtViewOriginGuarderBooking);
         txtViewDestinationClientBooking = findViewById(R.id.textViewDestinationGuarderBooking);
+        mtxtViewStatusBooking = findViewById(R.id.textViewStatusBooking);
+
+        getStatus();
 
         getClientBooking();
 
+    }
+    void getStatus(){
+        mListenerStatus = mClientBookingProvider.getStatus(mAuthProvider.getId()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    String status = dataSnapshot.getValue().toString();
+                    if(status.equals("accept")){
+                        mtxtViewStatusBooking.setText("Estado: Aceptado");
+
+                    }
+                    if(status.equals("start")){
+                        mtxtViewStatusBooking.setText("Estado: A espera");
+                        startBooking();
+                    } else if(status.equals("finish")) {
+                        mtxtViewStatusBooking.setText("Estado: Finalizado");
+                        finishBooking();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+    void startBooking(){
+        mMap.clear();
+        mMap.addMarker(new MarkerOptions().position(mOriginLatLng).title("Cliente").icon(BitmapDescriptorFactory.fromResource(R.drawable.bandera_roja)));
+        drawRoute(mOriginLatLng);//destination aqui cambie
+
+    }
+    void finishBooking(){
+        Intent i = new Intent(MapClientBookingActivity.this, CalificationGuarderiaActivity.class);
+        startActivity(i);
+        finish();
     }
 
     @Override
@@ -124,6 +166,9 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         super.onDestroy();
         if(mListener!=null){
             mGeofireProvider.getGuarderiaLocation(mIdGuarder).removeEventListener(mListener);//despúes q se cierre no siga escuchando la posicion del conductor
+        }
+        if(mListenerStatus != null){
+            mClientBookingProvider.getStatus(mAuthProvider.getId()).removeEventListener(mListenerStatus);
         }
     }
 
@@ -197,7 +242,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
                     mMarkerGuarder = mMap.addMarker(new MarkerOptions()
                             .position(new LatLng(lat,lng))
                             .title("La guarderia")
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.bandera_azul)));
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.madre)));
                     if(mIsFirstTime){
                         mIsFirstTime = false;
                         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(
@@ -206,7 +251,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
                                         .zoom(14f)
                                         .build()
                         ));
-                        drawRoute();
+                        drawRoute(mOriginLatLng);//aqui para el origen
                     }
                 }
 
@@ -219,8 +264,8 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         });
     }
 
-    private void drawRoute(){
-        mGoogleApiProvider.getDirections(mGuarderLatLng, mOriginLatLng).enqueue(new Callback<String>() {
+    private void drawRoute(LatLng latLng){
+        mGoogleApiProvider.getDirections(mGuarderLatLng, latLng).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 try {
@@ -263,7 +308,7 @@ public class MapClientBookingActivity extends AppCompatActivity implements OnMap
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.setMyLocationEnabled(true);
+        //mMap.setMyLocationEnabled(true);
 
     }
 }

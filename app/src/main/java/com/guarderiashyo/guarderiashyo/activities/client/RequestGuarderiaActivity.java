@@ -200,7 +200,7 @@ public class RequestGuarderiaActivity extends AppCompatActivity {
                     map.put("title","SOLICITUD DE SERVICIO A "+ time + "DE TU POSICIÓN");
                     map.put("body","Un cliente esta solicitando el servicio a una distancia de "+km);
                     map.put("idClient", mAuthProvider.getId());
-                    FCMBody fcmBody = new FCMBody(token, "high", map);
+                    FCMBody fcmBody = new FCMBody(token, "high", "4500s",map);
                     mNotificationProvider.sendNotification(fcmBody).enqueue(new Callback<FCMResponse>() {
                         @Override
                         public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {

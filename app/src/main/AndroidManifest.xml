@@ -12,7 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.guarderia.MapGuarderiaBookingActivity"></activity>
+        <activity android:name=".activities.client.CalificationGuarderiaActivity"></activity>
+        <activity android:name=".activities.guarderia.CalificationClientActivity" />
+        <activity android:name=".activities.guarderia.MapGuarderiaBookingActivity" />
         <activity android:name=".activities.client.MapClientBookingActivity" />
 
         <receiver

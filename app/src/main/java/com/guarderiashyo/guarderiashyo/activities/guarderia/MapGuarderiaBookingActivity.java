@@ -49,23 +49,31 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.guarderiashyo.guarderiashyo.R;
 import com.guarderiashyo.guarderiashyo.Utils.DecodePoints;
 import com.guarderiashyo.guarderiashyo.activities.client.DetailRequestActivity;
+import com.guarderiashyo.guarderiashyo.activities.client.RequestGuarderiaActivity;
+import com.guarderiashyo.guarderiashyo.models.ClientBooking;
+import com.guarderiashyo.guarderiashyo.models.FCMBody;
+import com.guarderiashyo.guarderiashyo.models.FCMResponse;
 import com.guarderiashyo.guarderiashyo.providers.AuthProvider;
 import com.guarderiashyo.guarderiashyo.providers.ClientBookingProvider;
 import com.guarderiashyo.guarderiashyo.providers.ClientProvider;
 import com.guarderiashyo.guarderiashyo.providers.GeofireProvider;
 import com.guarderiashyo.guarderiashyo.providers.GoogleApiProvider;
+import com.guarderiashyo.guarderiashyo.providers.NotificationProvider;
 import com.guarderiashyo.guarderiashyo.providers.TokenProviders;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MapGuarderiaBookingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -75,8 +83,9 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private GeofireProvider mGeofireProvider;
     private ClientProvider mClientProvider;
     private ClientBookingProvider mClientBookingProvider;
-    private TokenProviders mTokenProvider;
 
+    NotificationProvider mNotificationProvider;
+    TokenProviders mTokenProvider;
 
     private LocationRequest mLocationRequest;
     private FusedLocationProviderClient mFusedLocation;
@@ -99,6 +108,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private PolylineOptions mPolylineOptions;
 
     private boolean mIsFirstTime = true;
+    private boolean mIsCloseToClient = false;
 
     private Button mButtonStartBooking;
     private Button mButtonFinishBooking;
@@ -151,6 +161,10 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         mTokenProvider = new TokenProviders();
         mClientProvider = new ClientProvider();
         mClientBookingProvider = new ClientBookingProvider();
+        mNotificationProvider = new NotificationProvider();
+
+        //mButtonStartBooking.setEnabled(false);//inicia con estado enable.false
+
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
 
@@ -174,9 +188,12 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         mButtonStartBooking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(mIsCloseToClient){
                     startBooking();
-
+                } else{
+                    startBooking();
+                    //Toast.makeText(MapGuarderiaBookingActivity.this, "Debe estar dcerca a la posición", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -190,14 +207,41 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     }
 
     private void finishBooking() {
+        sendNotification("Ida finalizada");
+        if(mFusedLocation != null){
+            mFusedLocation.removeLocationUpdates(mLocationCallback);
+        }
+        mGeofireProvider.removeLocation(mAuthProvider.getId());
         mClientBookingProvider.updateStatus(mExtraClientId, "finish");
+        Intent i = new Intent(MapGuarderiaBookingActivity.this, CalificationClientActivity.class);
+        startActivity(i);
+        finish();
     }
     private void startBooking() {
         mClientBookingProvider.updateStatus(mExtraClientId, "start");
         mButtonStartBooking.setVisibility(View.GONE);
         mButtonFinishBooking.setVisibility(View.VISIBLE);
+        mMap.clear();
+        mMap.addMarker(new MarkerOptions().position(mOriginLatLng).title("Cliente").icon(BitmapDescriptorFactory.fromResource(R.drawable.bandera_azul)));
+
+        drawRoute(mOriginLatLng);
+        sendNotification("Ida iniciada");
+
 
     }
+
+    private double getDistanceBetween(LatLng clientLatLng, LatLng guarderLatLng){
+        double distance = 0;
+        Location clientLocation = new Location("");
+        Location guarderLocation = new Location("");
+        clientLocation.setLatitude(clientLatLng.latitude);
+        clientLocation.setLongitude(clientLatLng.longitude);
+        guarderLocation.setLatitude(guarderLatLng.latitude);
+        guarderLocation.setLongitude(guarderLatLng.longitude);
+        distance = clientLocation.distanceTo(guarderLocation);
+        return distance;
+    }
+
     void getClientBooking(){
         mClientBookingProvider.getClientBooking(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -217,7 +261,7 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
 
                     txtViewOriginBooking.setText("Ubicación: "+origin);
                     txtViewDestinationBooking.setText("Destino: "+destino);
-                    drawRoute();
+                    drawRoute(mOriginLatLng);
                 }
             }
 
@@ -228,8 +272,8 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
         });
     }
 
-    private void drawRoute(){
-        mGoogleApiProvider.getDirections(mCurrentLatLng, mOriginLatLng).enqueue(new Callback<String>() {
+    private void drawRoute(LatLng latLng){
+        mGoogleApiProvider.getDirections(mCurrentLatLng, latLng).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 try {
@@ -288,6 +332,18 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
     private void updateLocation() {
         if (mAuthProvider.existSession() && mCurrentLatLng != null) {
             mGeofireProvider.saveLocation(mAuthProvider.getId(), mCurrentLatLng);
+            if(!mIsCloseToClient){
+                if(mOriginLatLng != null && mCurrentLatLng != null){
+                    double distance = getDistanceBetween(mOriginLatLng, mCurrentLatLng); //metros
+                    if(distance <= 1000000000){//distancia q debe estar cerca
+                        //mButtonStartBooking.setEnabled(true);
+                        mIsCloseToClient = true;
+                        Toast.makeText(this, "Esta cerca a la posición del cliente", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+
         }
     }
 
@@ -418,5 +474,50 @@ public class MapGuarderiaBookingActivity extends AppCompatActivity implements On
                 ActivityCompat.requestPermissions(MapGuarderiaBookingActivity.this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             }
         }
+    }
+
+    private void sendNotification(final String status) {
+        mTokenProvider.getToken(mExtraClientId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {//contiene la inf del nodo del token
+                if(dataSnapshot.exists()){
+                    String token = dataSnapshot.child("token").getValue().toString();
+                    Map<String, String> map = new HashMap<>();
+                    map.put("title","Estado de tu ida");
+                    map.put("body","El estado de tu ida es: "+status);
+                    map.put("idClient", mAuthProvider.getId());
+                    FCMBody fcmBody = new FCMBody(token, "high","4500s", map);
+                    mNotificationProvider.sendNotification(fcmBody).enqueue(new Callback<FCMResponse>() {
+                        @Override
+                        public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                            if(response.body() != null){
+                                if(response.body().getSuccess() != 1){
+                                    Toast.makeText(MapGuarderiaBookingActivity.this, "No se envio la notificacion", Toast.LENGTH_SHORT).show();
+
+                                }
+                            }
+                            else{
+                                Toast.makeText(MapGuarderiaBookingActivity.this, "No se pudo enviar la notificación", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<FCMResponse> call, Throwable t) {
+                            Log.d("Error", "Error" + t.getMessage());
+
+                        }
+                    });
+                }else{
+                    Toast.makeText(MapGuarderiaBookingActivity.this, "No se pudo enviar la notificacion porque la guarderia no tiene un token de sesión", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }
